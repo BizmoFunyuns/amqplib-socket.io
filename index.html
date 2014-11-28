@@ -1,0 +1,59 @@
+<!doctype html>
+<html ng-app="eventsApp">
+<head>
+    <meta charset="UTF-8">
+    <title>socket.io-amqp.node</title>
+
+    <script type="text/javascript" src="lib/angular/angular.js"></script>
+    <script src="app.js"></script>
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script src="Services/socket-factory.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="Controllers/RabbitController.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="CSS/app.css">
+</head>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        var socket = io();
+
+        /*$("ul").on('click', "li", function() {
+            $(this).children("div").toggle("fast");
+        });*/
+
+        /*socket.on('data', function(msg){
+            $('#messages').append($('<li>').text(msg))
+        });
+        $('form').submit(function (event) {
+            socket.emit('chat message', $('#m').val());
+
+            $('#m').val('');
+            return false;
+        });*/
+    });
+</script>
+<body ng-controller="RabbitController">
+    <ul><li></li></ul>
+    <div id="list-container">
+        <ul id="messages" class="left">
+            <li class="list-group-item" ng-repeat="foo in dataFoo track by $index">{{foo}}</li>
+        </ul>
+        <!--<ul id="right-messages" class="right">
+            <li class="list-group-item parent-list" ng-repeat="foo in dataFoo track by $index">{{foo}}
+                <div class="sub-list">
+                    <ul>
+                        <li></li>
+                        <li></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>-->
+    </div>
+    <form action="">
+        <input id="m" autocomplete="off" /><label for="m"></label><button class="btn btn-primary" id="but">Send</button>
+    </form>
+</body>
+</html>
