@@ -2,7 +2,6 @@
  * Created by GGuinn on 11/22/2014.
  */
 
-//var app     = require('express')();
 var express = require('express');
 var app     = express();
 var http    = require('http').createServer(app);
@@ -59,16 +58,6 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function () {
         console.log('user disconnected');
     });
-
-    /*socket.on('chat message', function (msg) {
-        console.log('message: ' + msg);
-        //socket.emit('data', )
-    });*/
-
-    /*socket.on('data', function (data){
-        console.log('data received, emitting data2');
-        io.sockets.emit('data2', data);
-    });*/
 });
 
 http.listen(3000, function () {
