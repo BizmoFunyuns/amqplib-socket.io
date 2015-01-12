@@ -7,7 +7,7 @@ eventsApp.controller('RabbitController', ['$scope', '$log', 'socket', function (
     $log.info('controller');
     $scope.dataFoo = [];
 
-    socket.emit('subscribe', 'subscribing', function(msg){
+    socket.emit('subscribe', 'New Plan Issued', function(msg){
         $scope.foo = msg;
     });
 

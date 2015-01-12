@@ -25,7 +25,7 @@ app.use(express.static(__dirname + '/'));
 io.on('connection', function (socket) {
     console.log('a user connected');
 
-    socket.on('subscribe', function() {
+    socket.on('subscribe', function(queueNameSuppliedByHmi) {
 
         console.log('In subscribe');
 
@@ -33,17 +33,18 @@ io.on('connection', function (socket) {
 
             conn.createChannel().then(function (ch) {
 
-                var ok = ch.assertQueue('hello', {durable: false});
+                //var ok = ch.assertQueue('hello', {durable: false});
+                var ok = ch.assertQueue(queueNameSuppliedByHmi, {durable: false});
 
                 ok = ok.then(function (_qok) {
 
-                    ch.consume('hello', function (msg) {
+                    ch.consume(queueNameSuppliedByHmi, function (msg) {
 
                         console.log(" [x] Received '%s'", msg.content.toString());
 
                         console.log("In socket.io connection");
 
-                        io.sockets.emit('data', msg.content.toString());
+                        io.emit('data', msg.content.toString());
                     },
                     {noAck: true});
                 });
