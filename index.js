@@ -47,6 +47,8 @@ io.on('connection', function (socket) {
                         io.emit('data', msg.content.toString());
                     },
                     {noAck: true});
+
+                    return ok.then(conn.close.bind(conn));
                 });
 
                 ok.then(function (_consumeOk) {
