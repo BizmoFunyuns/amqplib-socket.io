@@ -7,7 +7,7 @@ var app     = express();
 var http    = require('http').createServer(app);
 var io      = require('socket.io')(http);
 var amqp 	= require('amqplib');
-var fs 		= require('fs');
+//var fs 		= require('fs');
 var opts 	= {
     rejectUnauthorized: 'false'
 };
@@ -38,8 +38,8 @@ function User (id, connection) {
 }
 
 var fooser = function () {
-    var conn;
-    var id;
+    var conn = null;
+    var id = -1;
 
     function closeConn() {
         if (typeof conn !== 'undefined') {
@@ -49,8 +49,6 @@ var fooser = function () {
         else {
             console.log("Did not delete");
         }
-
-        //conn.close();
     }
 
     return {
