@@ -31,7 +31,7 @@ function User (id, connection) {
                 this.connection.close();
             }
             catch (err){
-                console.log("Eating connection close exception: " + err + ". Nom-nom-nom");
+                console.log("User.closeConn exception: " + err + ". Eating exception and returning execution. Nom-nom-nom...");
             }
         }
     }
@@ -47,7 +47,7 @@ var fooser = function () {
             conn.close();
         }
         else {
-            console.log("Did not delete");
+            console.log("Did not delete user with id " + id);
         }
     }
 
