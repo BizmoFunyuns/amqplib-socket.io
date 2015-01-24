@@ -6,6 +6,7 @@ eventsApp.factory('socket', ['$rootScope', function ($rootScope) {
 
     console.log("In socket-factory");
     var socket = io.connect('http://localhost:3000');
+    //var socket = io.connect('http://136.251.224.159:3000');
 
     return {
         on: function (eventName, callback) {

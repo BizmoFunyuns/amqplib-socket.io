@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <title>socket.io-amqp.node</title>
 
-    <script type="text/javascript" src="lib/angular/angular.js"></script>
+    <!--<script type="text/javascript" src="lib/angular/angular.js"></script>-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.10/angular.js"></script>
     <script src="app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.2.1/socket.io.js"></script>
     <script src="http://localhost:3000/socket.io/socket.io.js"></script>
     <script src="Services/socket-factory.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
@@ -17,11 +19,17 @@
 
 <script type="text/javascript">
     $(document).ready(function() {
-        var socket = io();
+        //var socket = io();
 
         $("ul").on('click', "li", function() {
             $(this).children("div").toggle("fast");
         });
+
+        //var foo = angular.element('[ng-controller=RabbitController]').scope()
+
+        $('#foo').innerHTML = "grfeg";
+
+
 
         /*socket.on('data', function(msg){
             $('#messages').append($('<li>').text(msg))
@@ -33,9 +41,14 @@
             return false;
         });*/
     });
+
+    $(window).unload(function () {
+        alert("Leaving");
+    });
 </script>
 </head>
 <body ng-controller="RabbitController">
+    <div id = "foo"></div>
     <div id="list-container">
         <ul id="messages" class="left">
             <li class="list-group-item" ng-repeat="foo in dataFoo track by $index">{{foo}}</li>

@@ -7,15 +7,30 @@ eventsApp.controller('RabbitController', ['$scope', '$log', 'socket', function (
     $log.info('controller');
     $scope.dataFoo = [];
 
-    socket.emit('subscribe', 'New Plan Issued', function(msg){
+    $scope.user = {
+        queueName: "new_plan_issued",
+        id: Math.floor(Math.random() * 101)
+    };
+
+    /*socket.emit('subscribe', 'New_Plan_Issued', function(msg){
+        $scope.foo = msg;
+    });*/
+
+    socket.emit('subscribe', $scope.user, function(msg){
         $scope.foo = msg;
     });
 
     $log.info('in control');
 
     socket.on('data', function(message) {
-
         $scope.dataFoo[$scope.dataFoo.length] = message.toString();
-        //$scope.$apply();
+    });
+
+    window.onbeforeunload = function (event) {
+        socket.emit('disconnecting', $scope.user.id);
+    };
+
+    $scope.$on('$destroy', function() {
+        delete window.onbeforeunload;
     });
 }]);
