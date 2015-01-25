@@ -21,6 +21,7 @@ app.use(express.static(__dirname + '/'));
 var errorHasOccurred = false;
 var users = [];
 var foosers = [];
+var globalLookup = {};
 
 function User (id, connection) {
     this.id = id;
@@ -103,15 +104,19 @@ function doAmqpAdministration(queueNameSuppliedByHmi, id) {
 
         users.push(newUser);
 
+        globalLookup[newUser.id] = newUser;
+
+        console.log("globalLookup[" + newUser.id + "] = " + JSON.stringify(globalLookup[newUser.id], censor(globalLookup[newUser.id]), 4));
+
         var newFooser = new fooser();
         newFooser.id = id;
         newFooser.connection = conn;
 
         foosers.push(newFooser);
 
-        foosers.forEach(function (fooser) {
+        /*foosers.forEach(function (fooser) {
             console.log(fooser);
-        });
+        });*/
 
         conn.createChannel().then(function (ch) {
             ch.assertQueue(queueNameSuppliedByHmi, {durable: false})
@@ -153,4 +158,19 @@ function doAmqpAdministration(queueNameSuppliedByHmi, id) {
             }
         });
     })
+}
+function censor(censor) {
+    var i = 0;
+
+    return function(key, value) {
+        if(i !== 0 && typeof(censor) === 'object' && typeof(value) == 'object' && censor == value)
+            return '[Circular]';
+
+        if(i >= 29) // seems to be a harded maximum of 30 serialized objects?
+            return '[Unknown]';
+
+        ++i; // so we know we aren't using the original object anymore
+
+        return value;
+    }
 }
