@@ -100,8 +100,6 @@ function doAmqpAdministration(queueNameSuppliedByHmi, id) {
         console.log(id);
 
         var newUser = new User(id, conn);
-            /*newUser.id = id;
-            newUser.connection = conn;*/
 
         users.push(newUser);
 
@@ -114,18 +112,6 @@ function doAmqpAdministration(queueNameSuppliedByHmi, id) {
         foosers.forEach(function (fooser) {
             console.log(fooser);
         });
-
-        //newUser = {};
-
-        /*users.push({
-            id: id,
-            queueName: queueNameSuppliedByHmi,
-            connection: conn
-        });*/
-
-        /*users.forEach(function (user){
-            console.log(user);
-        });*/
 
         conn.createChannel().then(function (ch) {
             ch.assertQueue(queueNameSuppliedByHmi, {durable: false})
