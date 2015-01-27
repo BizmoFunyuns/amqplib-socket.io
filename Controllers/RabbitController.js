@@ -4,6 +4,7 @@
 var eventsApp = angular.module('eventsApp');
 eventsApp.controller('RabbitController', ['$scope', '$log', '$route', 'socket', function ($scope, $log, $route, socket) {
 
+    var isReconnecting = false;
     $log.info('controller');
     $scope.dataFoo = [];
 
@@ -27,16 +28,24 @@ eventsApp.controller('RabbitController', ['$scope', '$log', '$route', 'socket', 
     });
 
     socket.on('reconnect', function (message) {
+        isReconnecting = true;
         console.log('in controller reconnect');
+        //emitDisconnectingMessage();
         window.location.reload();
-        socket.emit('data', message);
     });
 
     window.onbeforeunload = function (event) {
-        socket.emit('disconnecting', $scope.user.id);
+        //socket.emit('disconnecting', $scope.user.id);
+        if (!isReconnecting) {
+            emitDisconnectingMessage();
+        }
     };
 
     $scope.$on('$destroy', function() {
         delete window.onbeforeunload;
     });
+
+    function emitDisconnectingMessage () {
+        socket.emit('disconnecting', $scope.user.id);
+    }
 }]);

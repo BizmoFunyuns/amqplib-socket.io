@@ -44,11 +44,15 @@ var fooser = function () {
 
     function closeConn() {
         if (typeof conn !== 'undefined') {
-            console.log("In close");
-            conn.close();
+            try {
+                conn.close();
+            }
+            catch (err) {
+                console.log("fooser.closeConn exception: " + err + ". Catching exception and continuing execution.");
+            }
         }
         else {
-            console.log("Did not delete user with id " + id);
+            console.log("This connection is undefined");
         }
     }
 
@@ -60,42 +64,39 @@ var fooser = function () {
 };
 
 io.on('connection', function (socket) {
-    console.log('a user connected');
+    console.log('a user connected to socket ' + socket.id);
 
     socket.on('subscribe', function (user) {
-
         console.log('In socket.io message "subscribe"');
 
-        doAmqpAdministration(user.queueName, user.id);
+        doAmqpAdministration(user.queueName, user.id, socket);
     });
 
     socket.on('disconnect', function () {
         console.log('user disconnected');
-
-        /*if (errorHasOccurred) {
-            reconnectClient();
-            errorHasOccurred = false;
-        }*/
     });
 
     socket.on('disconnecting', function (data) {
-        var lookup = {};
+        /*var lookup = {};
 
         for (var i = 0, len = users.length; i < len; i++) {
             lookup[users[i].id] = users[i];
-        }
+        }*/
         console.log("Disconnecting with id: " + data);
         //console.log("lookup[" + data + "]: " + JSON.stringify(lookup[data].connection, censor(lookup[data].connection), 4));
 
         //try {
-            lookup[data].closeConn();
-            delete globalLookup[data];
+            //lookup[data].closeConn();
 
-            /*for (var user in globalLookup) {
-                if (globalLookup.hasOwnProperty(user)) {
-                    console.log("user: " + JSON.stringify(user, censor(user), 4));
-                }
-            }*/
+        /*for (var user in globalLookup) {
+            if (globalLookup.hasOwnProperty(user)) {
+                console.log("user: " + JSON.stringify(globalLookup[user], censor(globalLookup[user]), 4));
+            }
+        }*/
+
+        globalLookup[data].closeConn();
+        delete globalLookup[data];
+
         /*}
         catch (err) {
             console.log("Eating exception. Nom-nom-nom...");
@@ -107,7 +108,7 @@ http.listen(3000, function () {
     console.log('listening on *:3000');
 });
 
-function doAmqpAdministration(queueNameSuppliedByHmi, id) {
+function doAmqpAdministration(queueNameSuppliedByHmi, id, socket) {
     amqp.connect('amqps://Symphony:SymphonyPass@localhost:5671', opts).then(function (conn) {
 
         console.log(id);
@@ -138,15 +139,15 @@ function doAmqpAdministration(queueNameSuppliedByHmi, id) {
         }*/
 
         conn.createChannel().then(function (ch) {
-            ch.assertQueue(queueNameSuppliedByHmi, {durable: false})
-                .then(function () {
-                    console.log("Queue '" + queueNameSuppliedByHmi + "' asserted successfully");
+            //ch.assertQueue(queueNameSuppliedByHmi, {durable: false})
+            ch.assertQueue("", {durable: false, autoDelete: true})
+                .then(function (queue) {
+                    console.log("Queue '" + queue.queue + "'");
 
-                    ch.consume(queueNameSuppliedByHmi, function (msg) {
-
+                    ch.consume(queue.queue, function (msg) {
                         console.log(" [x] Received '%s'", msg.content.toString());
 
-                        io.emit('data', msg.content.toString());
+                        socket.emit('data', msg.content.toString());
                     },
                     {noAck: true})
                 })
@@ -173,22 +174,34 @@ function doAmqpAdministration(queueNameSuppliedByHmi, id) {
 
             if (errorHasOccurred) {
                 console.log("Error has occurred");
-                reconnectClient();
+                //reconnectClient();
+                deleteUser(id);
+
+                reconnectClient(socket);
             }
         });
+    },
+    function (err) {
+        console.log(err);
     })
 }
 
-function reconnectClient () {
+function reconnectClient (socket) {
     console.log('In reconnectClient');
 
-    io.emit('reconnect', "Reconnecting to client");
+    //io.emit('reconnect', "Reconnecting to client");
+    socket.emit('reconnect', "Reconnecting to client");
 
     if (errorHasOccurred) {
         errorHasOccurred = false;
     }
 }
-function censor(censor) {
+
+function deleteUser(id) {
+    delete globalLookup[id];
+}
+
+/*function censor(censor) {
     var i = 0;
 
     return function(key, value) {
@@ -202,4 +215,4 @@ function censor(censor) {
 
         return value;
     }
-}
+}*/
