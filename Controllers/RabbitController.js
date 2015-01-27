@@ -2,7 +2,7 @@
  * Created by GGuinn on 11/23/2014.
  */
 var eventsApp = angular.module('eventsApp');
-eventsApp.controller('RabbitController', ['$scope', '$log', 'socket', function ($scope, $log, socket) {
+eventsApp.controller('RabbitController', ['$scope', '$log', '$route', 'socket', function ($scope, $log, $route, socket) {
 
     $log.info('controller');
     $scope.dataFoo = [];
@@ -24,6 +24,12 @@ eventsApp.controller('RabbitController', ['$scope', '$log', 'socket', function (
 
     socket.on('data', function(message) {
         $scope.dataFoo[$scope.dataFoo.length] = message.toString();
+    });
+
+    socket.on('reconnect', function (message) {
+        console.log('in controller reconnect');
+        window.location.reload();
+        socket.emit('data', message);
     });
 
     window.onbeforeunload = function (event) {

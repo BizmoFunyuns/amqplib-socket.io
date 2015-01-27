@@ -24,23 +24,23 @@ var foosers = [];
 var globalLookup = {};
 
 function User (id, connection) {
-    this.id = id;
+    this.id         = id;
     this.connection = connection;
-    this.closeConn = function () {
+    this.closeConn  = function () {
         if (typeof this.connection !== 'undefined'){
             try {
                 this.connection.close();
             }
             catch (err){
-                console.log("User.closeConn exception: " + err + ". Eating exception and returning execution. Nom-nom-nom...");
+                console.log("User.closeConn exception: " + err + ". Catching exception and continuing execution.");
             }
         }
     }
 }
 
 var fooser = function () {
-    var conn = null;
-    var id = -1;
+    var conn    = null;
+    var id      = -1;
 
     function closeConn() {
         if (typeof conn !== 'undefined') {
@@ -71,6 +71,11 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         console.log('user disconnected');
+
+        /*if (errorHasOccurred) {
+            reconnectClient();
+            errorHasOccurred = false;
+        }*/
     });
 
     socket.on('disconnecting', function (data) {
@@ -82,12 +87,19 @@ io.on('connection', function (socket) {
         console.log("Disconnecting with id: " + data);
         //console.log("lookup[" + data + "]: " + JSON.stringify(lookup[data].connection, censor(lookup[data].connection), 4));
 
-        try {
+        //try {
             lookup[data].closeConn();
-        }
+            delete globalLookup[data];
+
+            /*for (var user in globalLookup) {
+                if (globalLookup.hasOwnProperty(user)) {
+                    console.log("user: " + JSON.stringify(user, censor(user), 4));
+                }
+            }*/
+        /*}
         catch (err) {
             console.log("Eating exception. Nom-nom-nom...");
-        }
+        }*/
     });
 });
 
@@ -106,7 +118,7 @@ function doAmqpAdministration(queueNameSuppliedByHmi, id) {
 
         globalLookup[newUser.id] = newUser;
 
-        console.log("globalLookup[" + newUser.id + "] = " + JSON.stringify(globalLookup[newUser.id], censor(globalLookup[newUser.id]), 4));
+        //console.log("new globalLookup[" + newUser.id + "] = " + JSON.stringify(globalLookup[newUser.id], censor(globalLookup[newUser.id]), 4));
 
         var newFooser = new fooser();
         newFooser.id = id;
@@ -117,6 +129,13 @@ function doAmqpAdministration(queueNameSuppliedByHmi, id) {
         /*foosers.forEach(function (fooser) {
             console.log(fooser);
         });*/
+
+        /*for (var user in globalLookup) {
+            if (globalLookup.hasOwnProperty(user)) {
+                //console.log("user: " + JSON.stringify(user, censor(user), 4));
+                console.log("user: " + JSON.stringify(globalLookup[user], censor(globalLookup[user]), 4));
+            }
+        }*/
 
         conn.createChannel().then(function (ch) {
             ch.assertQueue(queueNameSuppliedByHmi, {durable: false})
@@ -154,10 +173,20 @@ function doAmqpAdministration(queueNameSuppliedByHmi, id) {
 
             if (errorHasOccurred) {
                 console.log("Error has occurred");
-                errorHasOccurred = false;
+                reconnectClient();
             }
         });
     })
+}
+
+function reconnectClient () {
+    console.log('In reconnectClient');
+
+    io.emit('reconnect', "Reconnecting to client");
+
+    if (errorHasOccurred) {
+        errorHasOccurred = false;
+    }
 }
 function censor(censor) {
     var i = 0;
