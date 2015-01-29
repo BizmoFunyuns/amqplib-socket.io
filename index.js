@@ -74,7 +74,7 @@ io.on('connection', function (socket) {
     socket.on('subscribe', function (user) {
         console.log('In socket.io message "subscribe"');
 
-        doAmqpAdministration(user.queueName, user.id, socket);
+        doAmqpAdministration(user.id, socket);
     });
 
     socket.on('disconnect', function () {
@@ -113,7 +113,7 @@ http.listen(3000, function () {
     console.log('listening on *:3000');
 });
 
-function doAmqpAdministration(queueNameSuppliedByHmi, id, socket) {
+function doAmqpAdministration(id, socket) {
     amqp.connect('amqps://Symphony:SymphonyPass@localhost:5671', opts).then(function (conn) {
 
         console.log(id);
