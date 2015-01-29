@@ -19,11 +19,11 @@ app.get('/', function(req, res){
 app.use(express.static(__dirname + '/'));
 
 var errorHasOccurred = false;
-var users = [];
-var foosers = [];
+//var users = [];
+//var foosers = [];
 var globalLookup = {};
 
-function User (id, connection) {
+/*function User (id, connection) {
     this.id         = id;
     this.connection = connection;
     this.closeConn  = function () {
@@ -36,7 +36,7 @@ function User (id, connection) {
             }
         }
     }
-}
+}*/
 
 var fooser = function () {
     var conn    = null;
@@ -56,10 +56,15 @@ var fooser = function () {
         }
     }
 
+    function setConn (newConn) {
+        conn = newConn;
+    }
+
     return {
         closeConn: closeConn,
         id: id,
-        connection: conn
+        connection: conn,
+        setConn: setConn
     }
 };
 
@@ -113,19 +118,23 @@ function doAmqpAdministration(queueNameSuppliedByHmi, id, socket) {
 
         console.log(id);
 
-        var newUser = new User(id, conn);
+        //var newUser = new User(id, conn);
+        //var newUser = new fooser();
 
-        users.push(newUser);
+        //users.push(newUser);
 
-        globalLookup[newUser.id] = newUser;
+        //globalLookup[newUser.id] = newUser;
 
         //console.log("new globalLookup[" + newUser.id + "] = " + JSON.stringify(globalLookup[newUser.id], censor(globalLookup[newUser.id]), 4));
 
         var newFooser = new fooser();
         newFooser.id = id;
-        newFooser.connection = conn;
+        //newFooser.connection = conn;
+        newFooser.setConn(conn);
 
-        foosers.push(newFooser);
+        //foosers.push(newFooser);
+
+        globalLookup[newFooser.id] = newFooser;
 
         /*foosers.forEach(function (fooser) {
             console.log(fooser);
