@@ -93,19 +93,7 @@ function doAmqpAdministration(id, socket) {
 
         users[newFooser.id] = newFooser;
 
-        /*foosers.forEach(function (fooser) {
-            console.log(fooser);
-        });*/
-
-        /*for (var user in users) {
-            if (users.hasOwnProperty(user)) {
-                //console.log("user: " + JSON.stringify(user, censor(user), 4));
-                console.log("user: " + JSON.stringify(users[user], censor(users[user]), 4));
-            }
-        }*/
-
         conn.createChannel().then(function (ch) {
-            //ch.assertQueue(queueNameSuppliedByHmi, {durable: false})
             ch.assertQueue("", {durable: false, autoDelete: true})
                 .then(function (queue) {
                     console.log("Queue '" + queue.queue + "'");
@@ -140,7 +128,6 @@ function doAmqpAdministration(id, socket) {
 
             if (errorHasOccurred) {
                 console.log("Error has occurred");
-                //reconnectClient();
                 deleteUser(id);
 
                 reconnectClient(socket);
