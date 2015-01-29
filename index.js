@@ -20,7 +20,7 @@ app.get('/', function(req, res){
 app.use(express.static(__dirname + '/'));
 
 var errorHasOccurred = false;
-var globalLookup = {};
+var users = {};
 var fooser = function () {
     var conn    = null;
     var id      = -1;
@@ -65,26 +65,11 @@ io.on('connection', function (socket) {
     });
 
     socket.on('disconnecting', function (userId) {
-        /*var lookup = {};
-
-        for (var i = 0, len = users.length; i < len; i++) {
-            lookup[users[i].id] = users[i];
-        }*/
-        console.log("Disconnecting with id: " + userId);
-        //console.log("lookup[" + data + "]: " + JSON.stringify(lookup[data].connection, censor(lookup[data].connection), 4));
-
-        //try {
-            //lookup[data].closeConn();
-
-        /*for (var user in globalLookup) {
-            if (globalLookup.hasOwnProperty(user)) {
-                console.log("user: " + JSON.stringify(globalLookup[user], censor(globalLookup[user]), 4));
-            }
-        }*/
+        console.log("Disconnecting user: " + userId);
 
         //TODO: Move to own method
         try {
-            globalLookup[userId].closeConn();
+            users[userId].closeConn();
         }
         catch (err) {
             console.log("There was an error closing the connection associated with user ID " + userId);
@@ -100,35 +85,22 @@ http.listen(3000, function () {
 
 function doAmqpAdministration(id, socket) {
     amqp.connect('amqps://Symphony:SymphonyPass@localhost:5671', opts).then(function (conn) {
-
-        console.log(id);
-
-        //var newUser = new User(id, conn);
-        //var newUser = new fooser();
-
-        //users.push(newUser);
-
-        //globalLookup[newUser.id] = newUser;
-
-        //console.log("new globalLookup[" + newUser.id + "] = " + JSON.stringify(globalLookup[newUser.id], censor(globalLookup[newUser.id]), 4));
-
         var newFooser = new fooser();
+
         newFooser.id = id;
-        //newFooser.connection = conn;
+
         newFooser.setConn(conn);
 
-        //foosers.push(newFooser);
-
-        globalLookup[newFooser.id] = newFooser;
+        users[newFooser.id] = newFooser;
 
         /*foosers.forEach(function (fooser) {
             console.log(fooser);
         });*/
 
-        /*for (var user in globalLookup) {
-            if (globalLookup.hasOwnProperty(user)) {
+        /*for (var user in users) {
+            if (users.hasOwnProperty(user)) {
                 //console.log("user: " + JSON.stringify(user, censor(user), 4));
-                console.log("user: " + JSON.stringify(globalLookup[user], censor(globalLookup[user]), 4));
+                console.log("user: " + JSON.stringify(users[user], censor(users[user]), 4));
             }
         }*/
 
@@ -181,10 +153,9 @@ function doAmqpAdministration(id, socket) {
 }
 
 function reconnectClient (socket) {
-    console.log('In reconnectClient');
+    console.log("Attempting to reconnect with client");
 
-    //io.emit('reconnect', "Reconnecting to client");
-    socket.emit('reconnect', "Reconnecting to client");
+    socket.emit('reconnect_client', "Reconnecting to client");
 
     if (errorHasOccurred) {
         errorHasOccurred = false;
@@ -193,7 +164,7 @@ function reconnectClient (socket) {
 
 function deleteUser(id) {
     try {
-        delete globalLookup[id];
+        delete users[id];
     }
     catch (err) {
         console.log("There was an error deleting the user associated with ID " + id);

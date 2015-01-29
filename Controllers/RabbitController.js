@@ -1,6 +1,9 @@
 /**
  * Created by GGuinn on 11/23/2014.
  */
+
+'use strict';
+
 var eventsApp = angular.module('eventsApp');
 eventsApp.controller('RabbitController', ['$scope', '$log', '$route', 'socket', function ($scope, $log, $route, socket) {
 
@@ -27,7 +30,7 @@ eventsApp.controller('RabbitController', ['$scope', '$log', '$route', 'socket', 
         $scope.dataFoo[$scope.dataFoo.length] = message.toString();
     });
 
-    socket.on('reconnect', function (message) {
+    socket.on('reconnect_client', function () {
         isReconnecting = true;
         console.log('in controller reconnect');
         //emitDisconnectingMessage();
