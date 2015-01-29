@@ -37,6 +37,14 @@ eventsApp.controller('RabbitController', ['$scope', '$log', '$route', 'socket', 
         window.location.reload();
     });
 
+    socket.on('reconnect', function () {
+        socket.emit('subscribe', $scope.user)
+    });
+
+    socket.on('reconnect_attempt', function () {
+        console.log("Attempting to reconnect");
+    });
+
     window.onbeforeunload = function (event) {
         //socket.emit('disconnecting', $scope.user.id);
         if (!isReconnecting) {
