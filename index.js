@@ -2,12 +2,13 @@
  * Created by GGuinn on 11/22/2014.
  */
 
+'use strict';
+
 var express = require('express');
 var app     = express();
 var http    = require('http').createServer(app);
 var io      = require('socket.io')(http);
 var amqp 	= require('amqplib');
-//var fs 		= require('fs');
 var opts 	= {
     rejectUnauthorized: 'false'
 };
@@ -19,25 +20,7 @@ app.get('/', function(req, res){
 app.use(express.static(__dirname + '/'));
 
 var errorHasOccurred = false;
-//var users = [];
-//var foosers = [];
 var globalLookup = {};
-
-/*function User (id, connection) {
-    this.id         = id;
-    this.connection = connection;
-    this.closeConn  = function () {
-        if (typeof this.connection !== 'undefined'){
-            try {
-                this.connection.close();
-            }
-            catch (err){
-                console.log("User.closeConn exception: " + err + ". Catching exception and continuing execution.");
-            }
-        }
-    }
-}*/
-
 var fooser = function () {
     var conn    = null;
     var id      = -1;
@@ -72,22 +55,22 @@ io.on('connection', function (socket) {
     console.log('a user connected to socket ' + socket.id);
 
     socket.on('subscribe', function (user) {
-        console.log('In socket.io message "subscribe"');
+        console.log("User " + user.id + " has connected");
 
         doAmqpAdministration(user.id, socket);
     });
 
     socket.on('disconnect', function () {
-        console.log('user disconnected');
+        console.log("socket " + socket.id + " has disconnected");
     });
 
-    socket.on('disconnecting', function (data) {
+    socket.on('disconnecting', function (userId) {
         /*var lookup = {};
 
         for (var i = 0, len = users.length; i < len; i++) {
             lookup[users[i].id] = users[i];
         }*/
-        console.log("Disconnecting with id: " + data);
+        console.log("Disconnecting with id: " + userId);
         //console.log("lookup[" + data + "]: " + JSON.stringify(lookup[data].connection, censor(lookup[data].connection), 4));
 
         //try {
@@ -99,13 +82,15 @@ io.on('connection', function (socket) {
             }
         }*/
 
-        globalLookup[data].closeConn();
-        delete globalLookup[data];
-
-        /*}
+        //TODO: Move to own method
+        try {
+            globalLookup[userId].closeConn();
+        }
         catch (err) {
-            console.log("Eating exception. Nom-nom-nom...");
-        }*/
+            console.log("There was an error closing the connection associated with user ID " + userId);
+        }
+
+        deleteUser(userId);
     });
 });
 
@@ -174,7 +159,7 @@ function doAmqpAdministration(id, socket) {
         });
 
         conn.on('error', function (err) {
-            console.log("The error: " + err);
+            console.log("there was an amqp error: " + err);
             errorHasOccurred = true;
         });
 
@@ -207,7 +192,12 @@ function reconnectClient (socket) {
 }
 
 function deleteUser(id) {
-    delete globalLookup[id];
+    try {
+        delete globalLookup[id];
+    }
+    catch (err) {
+        console.log("There was an error deleting the user associated with ID " + id);
+    }
 }
 
 /*function censor(censor) {
